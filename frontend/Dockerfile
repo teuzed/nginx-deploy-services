@@ -1,7 +1,3 @@
-
-FROM node:16.16.0-alpine as build
-
-# Etapa de construcción (React app)
 FROM node:16.16.0-alpine as build
 
 WORKDIR /app
