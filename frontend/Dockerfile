@@ -1,13 +1,4 @@
-# Etapa de construcción (React app)
-FROM node:16.16.0-alpine as build
 
-WORKDIR /app
-
-# Copiar las dependencias del proyecto
-COPY frontend/package*.json ./
-
-# Instalar las dependencias
-# Etapa de construcción (React app)
 FROM node:16.16.0-alpine as build
 
 # Etapa de construcción (React app)
