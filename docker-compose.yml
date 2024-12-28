@@ -11,8 +11,8 @@ services:
     entrypoint: sh /root/server/start_server.sh
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
     ports:
       - '80:80'
       - '443:443'
