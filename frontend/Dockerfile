@@ -1,47 +1,58 @@
-# Use a Node.js image to build the React app
+# Etapa de construcción (React app)
 FROM node:16.16.0-alpine as build
 
-# Set the working directory for the React app build
 WORKDIR /app
 
-# Copy package.json and package-lock.json (if available) to install dependencies
-COPY ./frontend/package*.json ./
+# Copiar las dependencias del proyecto
+COPY frontend/package*.json ./
 
-# Install dependencies for React (version 16)
+# Instalar las dependencias
+# Etapa de construcción (React app)
+FROM node:16.16.0-alpine as build
+
+# Etapa de construcción (React app)
+FROM node:16.16.0-alpine as build
+
+WORKDIR /app
+
+# Copiar las dependencias del proyecto
+COPY frontend/package*.json ./
+
+# Instalar las dependencias
 RUN npm install
 
-# Copy the rest of the React app source code into the container
+# Copiar el código fuente del proyecto
 COPY ./frontend ./
 
-# Build the React app for production
+# Construir la aplicación
 RUN npm run build
 
-# Now, we create the final image for serving the app with Nginx
+# Etapa de producción con Nginx
 FROM ubuntu:18.04
 
-# Set environment variables to non-interactive to avoid prompts during installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install Nginx, curl, vim, and Certbot for SSL
-RUN apt update -y \
-    && apt install nginx curl vim -y \
-    && apt-get install software-properties-common -y \
+# Instalar Nginx y otras dependencias necesarias
+RUN apt update -y && apt install -y nginx curl vim software-properties-common \
     && add-apt-repository ppa:certbot/certbot -y \
-    && apt-get update -y \
-    && apt-get install python-certbot-nginx -y \
-    && apt-get clean
+    && apt update -y \
+    && apt install -y python-certbot-nginx \
+    && apt clean
 
-# Expose HTTP and HTTPS ports
+# Exponer los puertos HTTP y HTTPS
 EXPOSE 80 443
 
-# Set the stop signal for graceful shutdown
-STOPSIGNAL SIGTERM
+# Eliminar el archivo por defecto en sites-enabled si existe
+RUN rm -f /etc/nginx/sites-enabled/default
 
-# Copy custom Nginx configuration (if exists)
-COPY ./deploy/default.conf /etc/nginx/sites-available/default
+# Crear el enlace simbólico
+RUN ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
 
-# Copy the build output from the React build stage into the Nginx web directory
+# Copiar la configuración de Nginx
+COPY deploy/default.conf /etc/nginx/sites-available/default
+
+# Copiar la build de React desde la etapa de construcción
 COPY --from=build /app/build /var/www/html
 
-# Set the command to run Nginx in the foreground
+# Iniciar Nginx
 CMD ["nginx", "-g", "daemon off;"]
